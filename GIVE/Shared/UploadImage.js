@@ -1,21 +1,36 @@
+import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
-import React from 'react';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-picker';
 import SellForm from '../Shared/SellForm';
+import { Cloudinary } from '@cloudinary/url-gen';
+import { AdvancedImage } from '@cloudinary/react';
 
+const cloudinary = new Cloudinary({
+  cloud: {
+    cloudName: 'dn1jmabsx', // Replace with your Cloudinary cloud name
+  },
+});
 
 const UploadImage = ({ categoryName }) => {
-  const pickImageAsync = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      quality: 1,
-    });
+  const [imageUri, setImageUri] = useState(null);
 
-    if (!result.cancelled) {
-      console.log(result);
-    } else {
-      alert('You did not select any image.');
-    }
+  const pickImageAsync = () => {
+    const options = {
+      mediaType: 'photo',
+      quality: 1,
+    };
+  
+    ImagePicker.launchImageLibrary(options, (response) => {
+      if (response.didCancel) {
+        alert('You did not select any image.');
+      } else if (response.error) {
+        alert('Error selecting image: ' + response.error);
+      } else {
+        const { uri } = response;
+        setImageUri(uri);
+      }
+    });
+    console.log(result);
   };
 
   const ImagePickerIcon = require('../assets/ImageUploadIcon.png');
@@ -27,8 +42,16 @@ const UploadImage = ({ categoryName }) => {
         <Image source={ImagePickerIcon} style={styles.icon} />
       </Pressable>
       <Text style={styles.text}>Upload Image</Text>
-      <SellForm categoryName={categoryName} />
-
+      {imageUri && (
+        <View style={styles.imageContainer}>
+          <AdvancedImage
+            cldImg={cloudinary.image(imageUri)}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        </View>
+      )}
+      <SellForm categoryName={categoryName} imageUri={imageUri} />
     </View>
   );
 };
@@ -54,6 +77,15 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginLeft: 30,
     marginBottom: 20,
+  },
+  imageContainer: {
+    width: '100%',
+    height: 200,
+    marginBottom: 20,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
 });
 

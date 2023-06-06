@@ -1,16 +1,17 @@
+// SellForm.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet,Dimensions } from 'react-native';
-import CommonButton from './Form/CommonButton';
-import axios from "axios";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Image } from 'react-native';
+import axios from 'axios';
 import baseURL from '../assets/common/baseUrl';
 import Error from '../Shared/Error';
+import CommonButton from './Form/CommonButton';
 
-const SellForm = ({categoryName}) => {
+const SellForm = ({ categoryName, imageUri }) => {
   const [type, setType] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetAudience, setTargetAudience] = useState('');
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const handleTypeChange = (text) => {
     setType(text);
@@ -27,43 +28,57 @@ const SellForm = ({categoryName}) => {
   const handleAudienceSelection = (audience) => {
     setTargetAudience(audience);
   };
-  
-  const handleSubmit = async() => {
+
+  const handleSubmit = async () => {
     try {
-      setError("");
+      setError('');
       if (!categoryName) {
-        // Handle the case when the categoryName prop is missing
         console.error('CategoryName prop is required');
         return;
       }
 
       const categoryResponse = await axios.get(`${baseURL}categories?name=${categoryName}`);
       const category = categoryResponse.data;
-      
+
       if (!category) {
-        // Handle the case when the category is not found
         console.error('Category not found');
         return;
       }
 
-      const response = await axios.post(`${baseURL}products/sell`, { categoryId:category._id,type,title,description,targetAudience });
+      const formData = new FormData();
+      formData.append('categoryId', category._id);
+      formData.append('type', type);
+      formData.append('title', title);
+      formData.append('description', description);
+      formData.append('targetAudience', targetAudience);
+
+      if (imageUri) {
+        formData.append('image', {
+          uri: imageUri,
+          name: 'image.jpg',
+          type: 'image/jpeg',
+        });
+      }
+
+      const response = await axios.post(`${baseURL}products/sell`, formData);
       if (response.status === 200) {
-          console.log('Success');
-          setError("Posted Sucessfully");
-         
+        console.log('Success');
+        setError('Posted Successfully');
       }
     } catch (error) {
       console.error(error);
-                if (error.response && error.response.data && error.response.data.message) {
-                    setError(error.response.data.message);
-                } else {
-                    setError("Something went wrong. Please try again.");
-                }
+      if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
     }
-    console.log('Form submitted:', { type, title, description, targetAudience,categoryName });
+    console.log('Form submitted:', { type, title, description, targetAudience, categoryName, imageUri });
   };
+
   return (
     <View style={styles.container}>
+      {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
       <Text style={styles.label}>Product Company</Text>
       <TextInput style={styles.input} value={type} onChangeText={handleTypeChange} />
 
@@ -99,35 +114,37 @@ const SellForm = ({categoryName}) => {
         <Text style={styles.buttonText}>Common Use</Text>
       </TouchableOpacity>
       {error ? <Error message={error} /> : null}
-      
 
-      <CommonButton title={'Submit'} bgColor={'#9683dd'} textColor={'#ffffff' } 
-                    onPress={() => { handleSubmit() }} />
+      <CommonButton title={'Submit'} bgColor={'#9683dd'} textColor={'#ffffff'} onPress={handleSubmit} />
     </View>
   );
 };
-const deviceWidth = Math.round(Dimensions.get('window').width)
+const deviceWidth = Math.round(Dimensions.get('window').width);
 const deviceHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
   container: {
-
-    marginTop:30,
+    marginTop: 30,
     width: deviceWidth - 60,
-    height:deviceHeight-280,
+    height: deviceHeight - 280,
     padding: 20,
     borderRadius: 10,
-    // elevation: 2,
   },
-
+  image: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
+    marginBottom: 20,
+    borderRadius: 5,
+  },
   label: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
-    color:'grey',
+    color: 'grey',
   },
   input: {
-    borderWidth: 0.70,
+    borderWidth: 0.7,
     borderColor: 'gray',
     borderRadius: 5,
     padding: 10,
@@ -152,7 +169,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  
 });
 
 export default SellForm;
