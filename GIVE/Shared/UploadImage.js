@@ -2,14 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
 import ImagePicker from 'react-native-image-picker';
 import SellForm from '../Shared/SellForm';
-import { Cloudinary } from '@cloudinary/url-gen';
-import { AdvancedImage } from '@cloudinary/react';
-
-const cloudinary = new Cloudinary({
-  cloud: {
-    cloudName: 'dn1jmabsx', // Replace with your Cloudinary cloud name
-  },
-});
 
 const UploadImage = ({ categoryName }) => {
   const [imageUri, setImageUri] = useState(null);
@@ -19,18 +11,17 @@ const UploadImage = ({ categoryName }) => {
       mediaType: 'photo',
       quality: 1,
     };
-  
+
     ImagePicker.launchImageLibrary(options, (response) => {
       if (response.didCancel) {
-        alert('You did not select any image.');
+        console.log('Image selection cancelled');
       } else if (response.error) {
-        alert('Error selecting image: ' + response.error);
+        console.error('Error selecting image:', response.error);
       } else {
         const { uri } = response;
         setImageUri(uri);
       }
     });
-    console.log(result);
   };
 
   const ImagePickerIcon = require('../assets/ImageUploadIcon.png');
@@ -44,11 +35,7 @@ const UploadImage = ({ categoryName }) => {
       <Text style={styles.text}>Upload Image</Text>
       {imageUri && (
         <View style={styles.imageContainer}>
-          <AdvancedImage
-            cldImg={cloudinary.image(imageUri)}
-            style={styles.image}
-            resizeMode="cover"
-          />
+          <Image source={{ uri: imageUri }} style={styles.image} />
         </View>
       )}
       <SellForm categoryName={categoryName} imageUri={imageUri} />
@@ -86,6 +73,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover',
   },
 });
 

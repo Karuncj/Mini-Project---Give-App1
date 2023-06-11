@@ -1,18 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const path=require('path')
 const cloudinary = require('cloudinary').v2;
 const Product = require('../models/product');
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: 'dn1jmabsx',
-  api_key: '524582688139714',
-  api_secret: '3XcgrYmIJ5a8pGy6UTmTUXWTFFM',
-});
+// // Configure Cloudinary
+// cloudinary.config({
+//   cloud_name: 'dn1jmabsx',
+//   api_key: '524582688139714',
+//   api_secret: '3XcgrYmIJ5a8pGy6UTmTUXWTFFM',
+// });
 
 // Set up multer storage configuration
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, '../Images'); // Update the destination folder path according to your project structure
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
 
 // Set up multer upload configuration
 const upload = multer({ storage });
@@ -43,10 +51,8 @@ router.post('/sell', upload.single('image'), async (req, res) => {
   try {
     const { categoryId, type, title, description, targetAudience } = req.body;
 
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'uploads', // Optional: Specify the folder where the images will be stored in Cloudinary
-    });
-
+    // const result = await cloudinary.uploader.upload(req.file.path, {
+    //   folder: 'uploads', // Optional: Specify the folder where the images will be stored in Cloudinary
 
     const newProduct = new Product({
       category: categoryId,
@@ -54,7 +60,7 @@ router.post('/sell', upload.single('image'), async (req, res) => {
       name: title,
       description: description,
       Audience: targetAudience,
-      image: result.secure_url, // Save the secure URL of the uploaded image to the product document
+      image: req.file.path,
     });
 
     // Save the product to the database
