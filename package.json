@@ -1,12 +1,12 @@
 {
   "dependencies": {
-    "react-native-swiper": "^1.6.0"
+    "react-native-swiper": "^1.6.0",
+    "react-scripts": "^5.0.1"
   },
   "name": "mini-project---give-app1",
   "description": "",
   "version": "1.0.0",
   "main": "index.js",
-  "devDependencies": {},
   "scripts": {
     "install-server": "cd backend && npm install",
     "start-server": "cd backend && node app.js",
@@ -19,4 +19,3 @@
   "author": "",
   "license": "ISC"
 }
-
