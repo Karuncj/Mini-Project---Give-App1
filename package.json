@@ -11,8 +11,9 @@
     "install-server": "cd backend && npm install",
     "start-server": "cd backend && node app.js",
     "install-client": "cd GIVE && npm install",
-    "build-client": "cd GIVE && npm run build",
-    "start-client": "cd GIVE && npm run start"
+    "build-client": "cd GIVE && npm run build ",
+    "start-client": "cd GIVE && npm run start",
+    "build": "react-scripts build --entry ./src/index.js"
   },
   "keywords": [],
   "author": "",
